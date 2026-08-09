@@ -1,0 +1,87 @@
+name: 'DevLens Code Health'
+description: 'Analyze your code health and get actionable recommendations'
+author: 'DevLens Contributors'
+
+branding:
+  icon: 'activity'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Path to analyze'
+    required: false
+    default: '.'
+  format:
+    description: 'Output format (terminal, json, markdown)'
+    required: false
+    default: 'terminal'
+  fail_on:
+    description: 'Fail check if health score is below this grade (A, B, C, D, F)'
+    required: false
+    default: 'C'
+  comment:
+    description: 'Post markdown report as PR comment'
+    required: false
+    default: 'true'
+
+outputs:
+  health_score:
+    description: 'Overall health score'
+    value: ${{ steps.analyze.outputs.health_score }}
+  grade:
+    description: 'Health grade'
+    value: ${{ steps.analyze.outputs.grade }}
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install DevLens
+      shell: bash
+      run: npm install -g devlens
+
+    - name: Analyze
+      id: analyze
+      shell: bash
+      run: |
+        OUTPUT=$(devlens analyze ${{ inputs.path }} --format json)
+        echo "$OUTPUT"
+
+        SCORE=$(echo "$OUTPUT" | node -e "process.stdin.on('data',d=>{const j=JSON.parse(d);console.log(j.score.overall)})")
+        GRADE=$(echo "$OUTPUT" | node -e "process.stdin.on('data',d=>{const j=JSON.parse(d);console.log(j.score.grade)})")
+
+        echo "health_score=${SCORE}" >> $GITHUB_OUTPUT
+        echo "grade=${GRADE}" >> $GITHUB_OUTPUT
+
+    - name: Post PR Comment
+      if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { execSync } = require('child_process');
+          const report = execSync('devlens analyze ${{ inputs.path }} --format markdown', {
+            encoding: 'utf-8',
+            maxBuffer: 10 * 1024 * 1024,
+          });
+          github.rest.issues.createComment({
+            ...context.repo,
+            issue_number: context.issue.number,
+            body: report.slice(0, 65000),
+          });
+
+    - name: Check threshold
+      if: ${{ inputs.fail_on != 'F' }}
+      shell: bash
+      run: |
+        GRADE_ORDER='{"A":0,"B":1,"C":2,"D":3,"F":4}'
+        TARGET=$(echo "$GRADE_ORDER" | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d)['${{ inputs.fail_on }}']))")
+        CURRENT=$(echo "$GRADE_ORDER" | node -e "process.stdin.on('data',d=>console.log(JSON.parse(d)[process.env.GRADE]))")
+        if [ "$CURRENT" -ge "$TARGET" ]; then
+          echo "Health grade $GRADE meets threshold ${{ inputs.fail_on }}"
+        else
+          echo "Health grade $GRADE is below threshold ${{ inputs.fail_on }}"
+          exit 1
+        fi
