@@ -1,79 +1,114 @@
-# DevLens
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-blue?style=flat-square" alt="version">
+  <img src="https://img.shields.io/github/license/pxmpsdev/devlens?style=flat-square" alt="license">
+  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="build">
+  <img src="https://img.shields.io/node/v/devlens?style=flat-square" alt="node version">
+</p>
 
-> Analyze git repositories and score code health — right from your terminal.
+<h1 align="center">🔍 DevLens</h1>
+<p align="center"><strong>Code Health Analyzer for Git Repositories</strong><br>
+<em>Inspect, score, and improve your codebase — right from the terminal.</em></p>
 
-DevLens inspects your codebase and produces a clear, actionable health report. It measures complexity, duplication, maintainability, and git hotspots, then generates a 0–100 health score with concrete recommendations.
+---
 
-## Quick Start
+## ⚡ Quick Start
 
 ```bash
-# Install
 npm install -g devlens
-
-# Analyze your project
 devlens analyze .
-
-# JSON output for CI/CD
-devlens analyze . --format json
 ```
 
-## Example Output
+---
+
+## 📊 Example Output
 
 ```
 DevLens Code Health
-────────────────────────────────────────────
-Repository: my-project
-Branch: main
-Files analyzed: 143
-Health Score: 78/100  B
+────────────────────────────────────────────────────────────
+  Repository:    src
+  Branch:         master
+  Last commit:    faf27d4c
+  Files analyzed: 18
+  Health Score:   88/100  B
 
 Complexity
-  Average: 8.2
-  Highest: 34
-
-Code Duplication
-  Estimated: 6.8%
-
-Git Hotspots
-  15.5  src/auth/login.ts              92 changes
-  12.1  src/api/users.ts               81 changes
-  9.8   src/db/query.ts                76 changes
+  Average:  16.1
+  Highest:  18  (analyzer/duplication/index.ts)
+  Top complex functions:
+    18  analyzer/duplication/index.ts:62  findDuplicateBlocks()
+    18  output/formatters.ts:4           formatTerminal()
+    17  recommendations/index.ts:8       generateRecommendations()
 
 Recommendations
-  ⚠ High cyclomatic complexity in loginUser()
-    src/auth/login.ts:42
-    Split authentication, validation and session creation
-    into separate functions.
+  ⚠ No test files found
+    The project has 18 source files but no test files were detected.
+    ➜ Add unit tests for core functionality.
 
-  ⚡ Code duplication detected
-    Estimated duplication is 6.8% across 12 blocks.
-    Extract duplicated code into shared utilities.
+  ⚡ High cyclomatic complexity in findDuplicateBlocks()
+    analyzer/duplication/index.ts:62
+    Function findDuplicateBlocks() has complexity of 18.
+    ➜ Split findDuplicateBlocks() into smaller, focused functions.
 ```
 
-## Features
+---
 
-- **Complexity Analysis** — Cyclomatic complexity per function via TypeScript Compiler API
-- **Duplication Detection** — Finds similar code blocks across files
-- **Git Hotspots** — Identifies frequently changed, high-complexity files
-- **Health Score** — Transparent 0–100 score with weighted breakdown
-- **Recommendations** — Concrete, actionable suggestions with severity levels
-- **Multiple Outputs** — Terminal, JSON, Markdown
-- **CI/CD Ready** — Exit codes and JSON output for automation
-- **Configurable** — All thresholds and weights adjustable via `.devlensrc`
+## 🛠 Features
 
-## Commands
+| Feature | Description |
+|---------|------------|
+| **Complexity Analysis** | Cyclomatic complexity per function via TypeScript Compiler API |
+| **Duplication Detection** | Finds similar code blocks across files |
+| **Git Hotspots** | Frequently changed files with high complexity |
+| **Health Score** | Transparent 0–100 score with weighted dimensions |
+| **Recommendations** | Concrete suggestions with file, line & severity |
+| **Multiple Outputs** | Colored terminal, JSON, Markdown |
+| **CI/CD Ready** | Exit codes and JSON output for automation |
+| **Configurable** | All thresholds and weights via `.devlensrc` |
+
+---
+
+## 📋 Commands
 
 | Command | Description |
-|---------|-------------|
+|---------|------------|
 | `devlens analyze <path>` | Full code health analysis |
 | `devlens hotspots <path>` | Git hotspots only |
 | `devlens history <path>` | Git history metrics |
-| `devlens report <path>` | Full report with file output |
+| `devlens report <path>` | Generate report & optionally save to file |
 | `devlens --help` | Show all commands |
 
-## Configuration
+**Options:**
+```
+-f, --format <format>    terminal (default), json, markdown
+-o, --output <file>      Save report to file
+-n, --limit <number>     Limit number of hotspots
+```
 
-Create a `.devlensrc` file in your project root:
+---
+
+## 🎯 Health Score
+
+The score is calculated from four weighted dimensions:
+
+```
+Score = 35% × Complexity + 25% × Duplication + 25% × Maintainability + 15% × Git Risk
+```
+
+| Grade | Score | Meaning |
+|-------|-------|---------|
+| **A** | 90–100 | Excellent |
+| **B** | 75–89 | Good |
+| **C** | 60–74 | Needs improvement |
+| **D** | 40–59 | Critical |
+| **F** | 0–39 | Requires immediate attention |
+
+All weights are configurable in `.devlensrc`.
+
+---
+
+## ⚙ Configuration
+
+Create a `.devlensrc` in your project root:
 
 ```json
 {
@@ -83,79 +118,80 @@ Create a `.devlensrc` file in your project root:
     "maintainability": 0.25,
     "gitRisk": 0.15
   },
-  "exclude": ["node_modules", "dist", ".git", "coverage"],
+  "exclude": ["node_modules", "dist", ".git", "coverage", "*.gen.*"],
   "thresholds": {
-    "complexity": {
-      "high": 20,
-      "warning": 10
-    },
+    "complexity": { "high": 20, "warning": 10 },
     "fileSize": 500,
-    "duplication": {
-      "minBlockLines": 6,
-      "warningThreshold": 0.05
-    },
-    "hotspot": {
-      "minChanges": 5,
-      "highRisk": 15
-    }
+    "duplication": { "minBlockLines": 6, "warningThreshold": 0.05 },
+    "hotspot": { "minChanges": 5, "highRisk": 15 }
   },
   "languages": ["typescript", "javascript"]
 }
 ```
 
-## Health Score
+Supported config files: `.devlensrc`, `.devlensrc.json`, `.devlensrc.yaml`, `devlens.config.js`, and the `"devlens"` key in `package.json`.
 
-The health score (0–100) is calculated from four weighted dimensions:
+---
 
-| Dimension | Default Weight | Description |
-|-----------|---------------|-------------|
-| Complexity | 35% | Cyclomatic complexity of functions |
-| Duplication | 25% | Estimated code duplication percentage |
-| Maintainability | 25% | File health (size, complexity, churn) |
-| Git Risk | 15% | Hotspot risk from frequent changes + complexity |
-
-All weights are configurable in `.devlensrc`.
-
-## GitHub Action
+## 🤖 GitHub Action
 
 ```yaml
-- uses: devlens/action@v1
-  with:
-    path: 'src'
-    fail_on: 'C'
-    comment: 'true'
+name: Code Health
+on: [pull_request]
+
+jobs:
+  devlens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required for git history!
+
+      - uses: devlens/action@v1
+        with:
+          path: 'src'
+          fail_on: 'C'
+          comment: 'true'
 ```
 
-The action analyzes your code, posts a markdown report as a PR comment, and can fail the check if the health grade drops below your threshold.
+**Inputs:**
 
-## Architecture
+| Parameter | Default | Description |
+|-----------|---------|------------|
+| `path` | `.` | Repository path to analyze |
+| `fail_on` | `C` | Fail check if grade drops below this |
+| `comment` | `true` | Post markdown report as PR comment |
+
+---
+
+## 🏗 Architecture
 
 ```
 devlens/
 ├── src/
-│   ├── cli/            # Commander.js CLI
-│   │   └── commands/   # analyze, hotspots, history, report
-│   ├── analyzer/       # Code analysis engine
-│   │   ├── complexity/ # Cyclomatic complexity (TS Compiler API)
-│   │   ├── duplication/# Duplicate block detection
-│   │   ├── git/        # Git history + hotspot analysis
-│   │   └── files/      # File-level health metrics
-│   ├── scoring/        # Health score calculation
-│   ├── recommendations/# Concrete improvement suggestions
-│   ├── output/         # Terminal, JSON, Markdown formatters
-│   └── config/         # Configuration loading (cosmiconfig)
+│   ├── cli/              Commander.js CLI
+│   │   └── commands/     analyze, hotspots, history, report
+│   ├── analyzer/
+│   │   ├── complexity/   TS Compiler API (cyclomatic complexity)
+│   │   ├── duplication/  Code duplicate detection
+│   │   ├── git/          Git history & hotspot analysis
+│   │   └── files/        File-level health metrics
+│   ├── scoring/          Health score calculation
+│   ├── recommendations/  Concrete improvement suggestions
+│   ├── output/           Terminal / JSON / Markdown formatters
+│   └── config/           Configuration loader (cosmiconfig)
 └── tests/
-    ├── fixtures/        # Test repositories
-    └── unit/            # Unit tests
+    ├── fixtures/         Test repositories
+    └── unit/             36 unit tests
 ```
 
-### JSON Schema
+### JSON Data Model
 
-The CLI, GitHub Action, and future dashboard share the same data model:
+CLI, GitHub Action, and future dashboard share the same schema:
 
 ```json
 {
-  "repository": { "name": "...", "branch": "...", "analyzedFiles": 143 },
+  "repository": { "name": "...", "branch": "main", "analyzedFiles": 143 },
   "score": { "overall": 78, "breakdown": {...}, "grade": "B" },
   "metrics": {
     "complexity": { "average": 8.2, "highest": 34 },
@@ -163,29 +199,56 @@ The CLI, GitHub Action, and future dashboard share the same data model:
     "fileHealth": { "averageHealth": 72 },
     "git": { "totalCommits": 500, "churnRate": 12 }
   },
-  "hotspots": [
-    { "file": "src/auth/login.ts", "changes": 92, "riskScore": 15.5 }
-  ],
+  "hotspots": [{ "file": "src/auth.ts", "changes": 92, "riskScore": 15.5 }],
   "recommendations": [
-    { "file": "src/auth/login.ts", "line": 42, "severity": "high", "suggestion": "..." }
+    { "file": "src/auth.ts", "line": 42, "severity": "high", "suggestion": "..." }
   ]
 }
 ```
 
-## Roadmap
+---
 
-- [ ] Python, Rust, Go, Java, C#, PHP language support (via Tree-sitter)
+## 🧪 Development
+
+```bash
+git clone https://github.com/pxmpsdev/devlens.git
+cd devlens
+npm install
+npm run build
+npm test
+```
+
+| Script | Description |
+|--------|------------|
+| `npm run build` | Compile TypeScript |
+| `npm test` | Run all tests |
+| `npm run test:coverage` | Test coverage report |
+| `npm run lint` | Lint with Biome |
+| `npm run typecheck` | Type check only |
+
+---
+
+## 🗺 Roadmap
+
+- [ ] Python, Rust, Go, Java, C#, PHP support via Tree-sitter
 - [ ] Web dashboard
 - [ ] Dependency health analysis
 - [ ] Security vulnerability scanning
-- [ ] Test coverage integration
-- [ ] Git hooks integration
 - [ ] VS Code extension
+- [ ] Git hooks integration
 
-## Contributing
+---
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+## 📄 Docs
 
-## License
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
-MIT © DevLens Contributors
+---
+
+<p align="center">
+  <strong>MIT License</strong> &nbsp;·&nbsp; © DevLens Contributors<br>
+  <sub>Built with TypeScript ❤️</sub>
+</p>
