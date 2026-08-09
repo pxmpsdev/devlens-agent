@@ -1,7 +1,7 @@
 {
   "name": "devlens-agent",
   "version": "0.1.0",
-  "description": "Your AI-powered code health agent. Analyze complexity, duplication, git hotspots, and get actionable refactoring recommendations — in your terminal, CI/CD, or PR workflow.",
+  "description": "Autonomous code intelligence agent. Spots fragile code, dead logic, and refactoring targets by correlating static analysis with git history — then tells you exactly what to fix, not just what's wrong.",
   "license": "MIT",
   "author": "DevLens Contributors",
   "type": "module",

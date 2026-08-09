@@ -8,7 +8,7 @@ const program = new Command();
 
 program
   .name('devlens')
-  .description('Analyze git repositories and score code health')
+  .description('Autonomous code intelligence agent — spots fragile code, dead logic, and refactoring targets')
   .version('0.1.0')
   .addCommand(analyzeCommand())
   .addCommand(hotspotsCommand())
