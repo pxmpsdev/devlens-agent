@@ -1,14 +1,15 @@
 {
-  "name": "devlens",
+  "name": "devlens-agent",
   "version": "0.1.0",
-  "description": "Analyze git repositories and score code health",
+  "description": "Your AI-powered code health agent. Analyze complexity, duplication, git hotspots, and get actionable refactoring recommendations — in your terminal, CI/CD, or PR workflow.",
   "license": "MIT",
   "author": "DevLens Contributors",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "devlens": "./dist/cli/index.js"
+    "devlens": "./dist/cli/index.js",
+    "dl": "./dist/cli/index.js"
   },
   "files": [
     "dist",
@@ -49,12 +50,17 @@
     "code-health",
     "code-quality",
     "static-analysis",
-    "git",
+    "ai-agent",
+    "refactoring",
+    "complexity",
+    "git-hotspots",
+    "duplication",
     "cli",
-    "developer-tools"
+    "developer-tools",
+    "cicd"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/pxmpsdev/devlens.git"
+    "url": "https://github.com/pxmpsdev/devlens-agent.git"
   }
 }
